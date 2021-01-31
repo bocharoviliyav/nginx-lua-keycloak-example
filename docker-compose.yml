@@ -1,0 +1,36 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:1
+    container_name: nginx_container
+    restart: always
+    ports:
+      - 8081:8081
+    networks:
+      - mybridge
+
+  nginx-consumer:
+    image: nginx/consumer:1
+    container_name: nginx_consumer_container
+    restart: always
+    ports:
+      - 8082:8082
+    networks:
+      - mybridge
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloack
+    restart: always
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+      - PROXY_ADDRESS_FORWARDING=true
+    ports:
+      - 8080:8080
+    networks:
+      - mybridge
+
+networks:
+  mybridge:
+    driver: bridge
+    external: true
