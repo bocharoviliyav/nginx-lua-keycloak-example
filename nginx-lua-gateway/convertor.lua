@@ -37,7 +37,6 @@ return function()
 
     -- Get token from cache
     local accessTokenFromCache = customCache:get(clientIdentity)
-    log(ERR, "Token from cache", accessTokenFromCache)
     if accessTokenFromCache ~= nil then
         local bearerHeaderFromCache = string.format("Bearer %s", accessTokenFromCache)
         -- Get user info to token validation
@@ -53,8 +52,7 @@ return function()
     -- If response not exists or status not equals to 200 get new token and set into cache
     if not response or response.status ~= 200 then
         log(ERR, "Failed to validate token from cache: ", err)
-        log(ERR, "Header clientId: ", client)
-        log(ERR, "Header secret: ", secret)
+        log(ERR, "clientId: ", client)
         response, err = httpClient:request_uri(keycloakUrl ..
                 '/auth/realms/' .. realm .. '/protocol/openid-connect/token', {
             method = "POST",
@@ -79,18 +77,14 @@ return function()
         local json = require "json"
 
         local newAccessToken = json.decode(response.body)['access_token']
-        log(ERR, "New token: ", newAccessToken)
 
         -- Set new token
         customCache = ngx.shared.custom_cache
         customCache:set(clientIdentity, newAccessToken)
-        log(ERR, "Extract new token into cache: ", newAccessToken)
     end
     -- always get from cache
     customCache = ngx.shared.custom_cache
     local accessToken = customCache:get(clientIdentity)
-
-    log(ERR, "Token from cache: ", accessToken)
 
     local bearerHeader = string.format("Bearer %s", accessToken)
     ngx.req.set_header("Authorization", bearerHeader)
